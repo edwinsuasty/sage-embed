@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SageCell embebida</title>
+  <script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+  <style>
+    html,body { margin:0; height:100%; font-family:system-ui, Arial, sans-serif; }
+    .bar { padding:8px; background:#f5f5f5; border-bottom:1px solid #ddd; font-size:14px; }
+    #cell { min-height: calc(100vh - 40px); padding:8px; }
+  </style>
+</head>
+<body>
+  <div class="bar">Sage embebido</div>
+  <div id="cell"></div>
+
+  <script>
+    // Lee parámetros ?code=...&autoeval=1
+    function q(name, def){
+      var m = location.search.match(new RegExp('[?&]'+name+'=([^&]+)'));
+      return m ? decodeURIComponent(m[1].replace(/\+/g,' ')) : (def || '');
+    }
+    var initial  = q('code', 'factor(2025)');
+    var autoeval = /^(1|true|yes)$/i.test(q('autoeval','1'));
+
+    // Crea la celda de Sage
+    sagecell.makeSagecell({
+      inputLocation: '#cell',
+      template: sagecell.templates.minimal,
+      evalButtonText: 'Ejecutar',
+      autoeval: autoeval,
+      code: initial,
+      hide: ['permalink']
+    });
+  </script>
+</body>
+</html>
