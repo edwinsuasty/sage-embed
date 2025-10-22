@@ -3,120 +3,78 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SageCell embebida</title>
-
-  <!-- Script oficial para crear celdas -->
+  <title>Sage embebido</title>
   <script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
-
   <style>
-    :root{
+    :root {
       color-scheme: dark;
-      --bg:#0f1115; --panel:#151923; --text:#e5e7eb; --muted:#9aa4b2; --accent:#3b82f6; --border:#232839;
+      --bg: #0b0d11;
+      --text: #e5e7eb;
+      --panel: #141820;
+      --border: #232839;
+      --accent: #3b82f6;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%; margin:0; background:var(--bg); color:var(--text); font:14px/1.4 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;}
-    .bar{position:sticky; top:0; z-index:10; display:flex; align-items:center; gap:.75rem; padding:.6rem .9rem; background:linear-gradient(180deg, rgba(21,25,35,.96), rgba(21,25,35,.86)); border-bottom:1px solid var(--border); backdrop-filter:saturate(140%) blur(6px)}
-    .bar b{font-weight:600}
-    .bar small{color:var(--muted)}
-    .wrap{padding:.8rem}
-    .panel{max-width:1200px; margin:0 auto; background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:.6rem .8rem}
-    .row{display:flex; gap:.6rem; flex-wrap:wrap; align-items:center; margin-bottom:.6rem}
-    .row input[type="text"]{flex:1 1 420px; min-width:240px; border:1px solid var(--border); background:#0d1017; color:var(--text); padding:.55rem .7rem; border-radius:10px; outline:none}
-    .row button{border:1px solid var(--border); background:#0d1017; color:var(--text); padding:.55rem .8rem; border-radius:10px; cursor:pointer}
-    .row button:hover{border-color:#2b3246}
-    .msg{margin-top:.4rem; color:var(--muted); font-size:12px}
-    #cell{min-height:60vh}
-    /* Ajuste del botón de la celda (se inyecta) */
-    .sagecell .sagecell_evalButton{background:var(--accent) !important; border:0 !important; border-radius:10px !important}
-    .hide{display:none}
+    html, body {
+      height: 100%; margin: 0; padding: 0;
+      background: var(--bg); color: var(--text);
+      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+    }
+    #container {
+      height: 100%; display: flex; flex-direction: column; align-items: stretch;
+    }
+    #sage {
+      flex: 1 1 auto;
+      margin: 0.5rem;
+      border-radius: 12px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .sagecell .sagecell_evalButton {
+      background: var(--accent) !important;
+      border-radius: 8px !important;
+      padding: 6px 12px !important;
+    }
+    .sagecell {
+      background: var(--panel) !important;
+      color: var(--text) !important;
+      border: none !important;
+    }
   </style>
 </head>
 <body>
-  <div class="bar">
-    <b>Sage embebido</b>
-    <small id="state">cargando…</small>
-  </div>
-
-  <div class="wrap">
-    <div class="panel">
-      <div class="row">
-        <input id="codeInput" type="text" placeholder="Escribe código Sage, ej.: factor(2025)">
-        <button id="btnEval">Cargar & Ejecutar</button>
-        <button id="btnPermalink" title="Abrir esta celda en pestaña nueva">Abrir en pestaña</button>
-      </div>
-      <div class="msg" id="hint">Sugerencia: también puedes pasar ?code=...&autoeval=1 en la URL.</div>
-      <div id="cell"></div>
-      <div class="msg" id="err" style="color:#fca5a5"></div>
-    </div>
+  <div id="container">
+    <div id="sage"></div>
   </div>
 
   <script>
-    // ---- utilidades de querystring
-    function q(name, def){
-      var m = location.search.match(new RegExp('[?&]'+name+'=([^&]+)'));
-      return m ? decodeURIComponent(m[1].replace(/\+/g,' ')) : (def||'');
+    function q(name, def) {
+      var m = location.search.match(new RegExp('[?&]' + name + '=([^&]+)'));
+      return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : (def || '');
     }
-    function yes(v){ return /^(1|true|yes|on)$/i.test(String(v||'')); }
+    function yes(v) { return /^(1|true|yes|on)$/i.test(String(v || '')); }
 
-    // ---- estado UI
-    var $state = document.getElementById('state');
-    var $err   = document.getElementById('err');
-    var $codeI = document.getElementById('codeInput');
-    var $btn   = document.getElementById('btnEval');
-    var $plink = document.getElementById('btnPermalink');
+    var code = q('code', 'factor(2025)');
+    var auto = yes(q('autoeval', '1'));
 
-    var initial  = q('code', 'factor(2025)');
-    var autoeval = yes(q('autoeval','1'));
-    $codeI.value = initial;
-
-    // ---- crea/recarga la celda
-    function loadCell(code, auto){
-      $err.textContent = '';
-      $state.textContent = 'preparando celda…';
-      // limpia célula previa
-      var mount = document.getElementById('cell');
-      mount.innerHTML = '';
-
-      try{
-        // crea celda con el script oficial
+    function init(tries) {
+      if (window.sagecell && sagecell.makeSagecell) {
         sagecell.makeSagecell({
-          inputLocation: '#cell',
+          inputLocation: '#sage',
           template: sagecell.templates.minimal,
           evalButtonText: 'Ejecutar',
-          autoeval: !!auto,
-          code: code || '',
+          autoeval: auto,
+          code: code,
           hide: ['permalink']
         });
-        $state.textContent = auto ? 'auto-ejecutando…' : 'lista';
-      }catch(e){
-        $state.textContent = 'error';
-        $err.textContent = 'No se pudo inicializar SageCell: ' + (e && e.message ? e.message : e);
+      } else if (tries < 100) {
+        setTimeout(function () { init(tries + 1); }, 80);
+      } else {
+        document.body.innerHTML = '<div style="color:#f87171;text-align:center;padding:2rem;">No se pudo cargar SageCell.</div>';
       }
     }
-
-    // ---- botón "Cargar & Ejecutar"
-    $btn.addEventListener('click', function(){
-      loadCell($codeI.value, true);
-    });
-
-    // ---- botón "Abrir en pestaña"
-    $plink.addEventListener('click', function(){
-      var url = location.origin + location.pathname + '?autoeval=1&code=' + encodeURIComponent($codeI.value || '');
-      window.open(url, '_blank');
-    });
-
-    // ---- espera a que el script esté disponible y crea la celda inicial
-    (function waitAndInit(tries){
-      if (window.sagecell && sagecell.makeSagecell) {
-        loadCell(initial, autoeval);
-      } else if (tries < 100) {
-        $state.textContent = 'cargando script…';
-        setTimeout(function(){ waitAndInit(tries+1); }, 80);
-      } else {
-        $state.textContent = 'error';
-        $err.textContent = 'No se pudo cargar embedded_sagecell.js';
-      }
-    })(0);
+    init(0);
   </script>
 </body>
 </html>
