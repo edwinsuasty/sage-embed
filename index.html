@@ -31,21 +31,25 @@
       border: 1px solid var(--border);
       overflow: hidden;
     }
-    /* REGLA AÑADIDA PARA OCULTAR EL BOTÓN */
-    .sagecell .sagecell_evalButton {
-      display: none !important; /* Esto oculta el botón */
-    }
-    /* Fin de la regla añadida */
+    
+    /* Estilos originales del botón (se dejan por si otras reglas dependen de ellos) */
     .sagecell .sagecell_evalButton {
       background: var(--accent) !important;
       border-radius: 8px !important;
       padding: 6px 12px !important;
     }
-    .sagecell {
+    
+    .sagecell {
       background: var(--panel) !important;
       color: var(--text) !important;
       border: none !important;
     }
+    
+    /* REGLA AGREGADA: Oculta el botón 'Ejecutar' con máxima prioridad */
+    .sagecell .sagecell_evalButton {
+        display: none !important;
+    }
+    
   </style>
 </head>
 <body>
@@ -68,8 +72,8 @@
         sagecell.makeSagecell({
           inputLocation: '#sage',
           template: sagecell.templates.minimal,
-          // evalButtonText: 'Ejecutar', // Ya no es necesario si lo ocultas
-          autoeval: auto,
+          // Si no quieres que se ejecute automáticamente, cambia autoeval a '0'
+          autoeval: auto, 
           code: code,
           hide: ['permalink']
         });
