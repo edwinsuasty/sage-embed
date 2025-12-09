@@ -1,80 +1,85 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sage embebido</title>
-  <script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #0b0d11;
-      --text: #e5e7eb;
-      --panel: #141820;
-      --border: #232839;
-      --accent: #3b82f6;
-    }
-    html, body {
-      height: 100%; margin: 0; padding: 0;
-      background: var(--bg); color: var(--text);
-      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      overflow: hidden;
-    }
-    #container {
-      height: 100%; display: flex; flex-direction: column; align-items: stretch;
-    }
-    #sage {
-      flex: 1 1 auto;
-      margin: 0.5rem;
-      border-radius: 12px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      overflow: hidden;
-    }
-    .sagecell .sagecell_evalButton {
-      background: var(--accent) !important;
-      border-radius: 8px !important;
-      padding: 6px 12px !important;
-    }
-    .sagecell {
-      background: var(--panel) !important;
-      color: var(--text) !important;
-      border: none !important;
-    }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sage embebido</title>
+  <script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0d11;
+      --text: #e5e7eb;
+      --panel: #141820;
+      --border: #232839;
+      --accent: #3b82f6;
+    }
+    html, body {
+      height: 100%; margin: 0; padding: 0;
+      background: var(--bg); color: var(--text);
+      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+    }
+    #container {
+      height: 100%; display: flex; flex-direction: column; align-items: stretch;
+    }
+    #sage {
+      flex: 1 1 auto;
+      margin: 0.5rem;
+      border-radius: 12px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    /* REGLA AÑADIDA PARA OCULTAR EL BOTÓN */
+    .sagecell .sagecell_evalButton {
+      display: none !important; /* Esto oculta el botón */
+    }
+    /* Fin de la regla añadida */
+    .sagecell .sagecell_evalButton {
+      background: var(--accent) !important;
+      border-radius: 8px !important;
+      padding: 6px 12px !important;
+    }
+    .sagecell {
+      background: var(--panel) !important;
+      color: var(--text) !important;
+      border: none !important;
+    }
+  </style>
 </head>
 <body>
-  <div id="container">
-    <div id="sage"></div>
-  </div>
+  <div id="container">
+    <div id="sage"></div>
+  </div>
 
-  <script>
-    function q(name, def) {
-      var m = location.search.match(new RegExp('[?&]' + name + '=([^&]+)'));
-      return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : (def || '');
-    }
-    function yes(v) { return /^(1|true|yes|on)$/i.test(String(v || '')); }
+  <script>
+    function q(name, def) {
+      var m = location.search.match(new RegExp('[?&]' + name + '=([^&]+)'));
+      return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : (def || '');
+    }
+    function yes(v) { return /^(1|true|yes|on)$/i.test(String(v || '')); }
 
-    var code = q('code', 'factor(2025)');
-    var auto = yes(q('autoeval', '1'));
+    var code = q('code', 'factor(2025)');
+    var auto = yes(q('autoeval', '1'));
 
-    function init(tries) {
-      if (window.sagecell && sagecell.makeSagecell) {
-        sagecell.makeSagecell({
-          inputLocation: '#sage',
-          template: sagecell.templates.minimal,
-          evalButtonText: 'Ejecutar',
-          autoeval: auto,
-          code: code,
-          hide: ['permalink']
-        });
-      } else if (tries < 100) {
-        setTimeout(function () { init(tries + 1); }, 80);
-      } else {
-        document.body.innerHTML = '<div style="color:#f87171;text-align:center;padding:2rem;">No se pudo cargar SageCell.</div>';
-      }
-    }
-    init(0);
-  </script>
+    function init(tries) {
+      if (window.sagecell && sagecell.makeSagecell) {
+        sagecell.makeSagecell({
+          inputLocation: '#sage',
+          template: sagecell.templates.minimal,
+          // evalButtonText: 'Ejecutar', // Ya no es necesario si lo ocultas
+          autoeval: auto,
+          code: code,
+          hide: ['permalink']
+        });
+      } else if (tries < 100) {
+        setTimeout(function () { init(tries + 1); }, 80);
+      } else {
+        document.body.innerHTML = '<div style="color:#f87171;text-align:center;padding:2rem;">No se pudo cargar SageCell.</div>';
+      }
+    }
+    init(0);
+  </script>
 </body>
 </html>
