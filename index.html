@@ -58,10 +58,10 @@
   </div>
 
   <script>
-    function q(name, def) {
-      var m = location.search.match(new RegExp('[?&]' + name + '=([^&]+)'));
-      return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : (def || '');
-    }
+    function q(name, defVal) {
+    const v = new URLSearchParams(location.search).get(name);
+    return v === null ? (defVal || '') : v; // ya viene decodificado correctamente
+  }
     function yes(v) { return /^(1|true|yes|on)$/i.test(String(v || '')); }
 
     var code = q('code', 'factor(2025)');
@@ -87,3 +87,4 @@
   </script>
 </body>
 </html>
+
